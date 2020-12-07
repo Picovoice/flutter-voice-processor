@@ -17,6 +17,7 @@ class _MyAppState extends State<MyApp> {
   bool _isProcessing = false;
   VoiceProcessor _voiceProcessor;
   Function _removeListener;
+  Function _removeListener2;
 
   @override
   void initState() {
@@ -40,6 +41,7 @@ class _MyAppState extends State<MyApp> {
     });
 
     _removeListener = _voiceProcessor.addListener(_onBufferReceived);
+    _removeListener2 = _voiceProcessor.addListener(_onBufferReceived2);
     await _voiceProcessor.start();
 
     this.setState(() {
@@ -49,7 +51,11 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _onBufferReceived(dynamic eventData) {
-    print("Buffer of size ${eventData.length} received!");
+    print("Listener 1 received buffer of size ${eventData.length}!");
+  }
+
+  void _onBufferReceived2(dynamic eventData) {
+    print("Listener 2 received buffer of size ${eventData.length}!");
   }
 
   Future<void> _stopProcessing() async {
@@ -59,6 +65,7 @@ class _MyAppState extends State<MyApp> {
 
     await _voiceProcessor.stop();
     _removeListener();
+    _removeListener2();
 
     this.setState(() {
       _isButtonDisabled = false;

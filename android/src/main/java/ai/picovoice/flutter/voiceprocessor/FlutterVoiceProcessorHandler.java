@@ -43,7 +43,7 @@ PluginRegistry.RequestPermissionsResultListener {
   private final Activity activity;
   private final Handler eventHandler = new Handler();    
   private Result pendingPermissionResult;
-  private Map<Object, EventSink> bufferEventListeners = new HashMap<>();
+  private EventSink bufferEventSink;
 
   FlutterVoiceProcessorHandler(Activity activity) {    
     this.activity = activity;
@@ -77,12 +77,12 @@ PluginRegistry.RequestPermissionsResultListener {
 
   @Override
   public void onListen(Object listener, EventSink eventSink) {
-    bufferEventListeners.put(listener, eventSink);
+    bufferEventSink = eventSink;
   }
 
   @Override
   public void onCancel(Object listener) {
-    bufferEventListeners.remove(listener);
+    bufferEventSink = null;
   }
   
   
@@ -190,16 +190,15 @@ PluginRegistry.RequestPermissionsResultListener {
           for (int i = 0; i < buffer.length; i++)
             bufferObj.add(buffer[i]);
 
-          // send buffer event to listeners          
-          for (final Map.Entry<Object, EventSink> listener : bufferEventListeners.entrySet()) {
-            eventHandler.post(new Runnable() {
-              @Override
-              public void run() {
-                listener.getValue().success(bufferObj);
+          // send buffer event                      
+          eventHandler.post(new Runnable() {
+            @Override
+            public void run() {
+              if(bufferEventSink != null){
+                bufferEventSink.success(bufferObj);
               }
-            });
-          }
-
+            }
+          });                  
         }
       }
 
