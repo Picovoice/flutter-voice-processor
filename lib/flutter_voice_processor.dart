@@ -9,7 +9,7 @@ class VoiceProcessor {
   static VoiceProcessor _instance;
   int _frameLength;
   int _sampleRate;
-  int _nextListenerId = 1;
+  Stream _bufferEventStream;
 
   final MethodChannel _channel =
       const MethodChannel('flutter_voice_processor_methods');
@@ -19,6 +19,7 @@ class VoiceProcessor {
   VoiceProcessor._(frameLength, sampleRate) {
     _frameLength = frameLength;
     _sampleRate = sampleRate;
+    _bufferEventStream = _eventChannel.receiveBroadcastStream();
   }
 
   static getVoiceProcessor(int frameLength, int sampleRate) {
@@ -32,9 +33,7 @@ class VoiceProcessor {
   }
 
   RemoveListener addListener(BufferListener listener) {
-    var subscription = _eventChannel
-        .receiveBroadcastStream(_nextListenerId++)
-        .listen(listener, cancelOnError: true);
+    var subscription = _bufferEventStream.listen(listener, cancelOnError: true);
     return () {
       subscription.cancel();
     };

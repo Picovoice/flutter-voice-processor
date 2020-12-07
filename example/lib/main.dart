@@ -1,9 +1,6 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:flutter_voice_processor/flutter_voice_processor.dart';
 
 void main() {
@@ -52,7 +49,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _onBufferReceived(dynamic eventData) {
-    print(eventData);
+    print("Buffer of size ${eventData.length} received!");
   }
 
   Future<void> _stopProcessing() async {

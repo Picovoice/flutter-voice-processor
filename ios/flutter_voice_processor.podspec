@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
   A Flutter package plugin for real-time voice processing.
                        DESC
   s.homepage         = 'https://picovoice.ai/'
-  s.license          = { 'Apache-2.0' }
+  s.license          = { :type => 'Apache-2.0' }
   s.author           = { 'Picovoice' => 'hello@picovoice.ai' }
   s.source           = { :git => "https://github.com/Picovoice/flutter-voice-processor.git" }
   s.source_files = 'Classes/**/*'

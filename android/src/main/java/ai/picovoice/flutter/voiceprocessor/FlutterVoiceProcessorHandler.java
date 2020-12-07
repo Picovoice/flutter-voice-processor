@@ -68,7 +68,7 @@ PluginRegistry.RequestPermissionsResultListener {
         result.success(didStop);
         break;
       case "hasRecordAudioPermission" :
-        hasRecordAudioPermission(result);
+        checkRecordAudioPermission(result);
         break;
       default:
         result.notImplemented();
@@ -133,7 +133,7 @@ PluginRegistry.RequestPermissionsResultListener {
     return true;
   }
   
-  private void hasRecordAudioPermission(@NonNull Result result) {
+  private void checkRecordAudioPermission(@NonNull Result result) {
     boolean isPermissionGranted = ActivityCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
     if (!isPermissionGranted) {
       pendingPermissionResult = result;
