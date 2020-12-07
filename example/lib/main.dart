@@ -65,7 +65,7 @@ class _MyAppState extends State<MyApp> {
 
     this.setState(() {
       _isButtonDisabled = false;
-      _isProcessing = true;
+      _isProcessing = false;
     });
   }
 
