@@ -67,7 +67,7 @@ public class FlutterVoiceProcessorHandler
           !(call.argument("sampleRate") instanceof Integer)
         ) {
           result.error(
-            "-1",
+            "PV_INVALID_ARGUMENT",
             "Invalid argument provided to VoiceProcessor.start",
             null
           );
@@ -103,6 +103,10 @@ public class FlutterVoiceProcessorHandler
 
   public void start(final Integer frameSize, final Integer sampleRate) {
     if (started.get()) {
+      if (pendingStartRecordResult != null) {
+        pendingStartRecordResult.success(true);
+        pendingStartRecordResult = null;
+      }
       return;
     }
 
@@ -253,7 +257,7 @@ public class FlutterVoiceProcessorHandler
           @Override
           public void run() {
             if (pendingStartRecordResult != null) {
-              pendingStartRecordResult.error("-1", e.toString(), null);
+              pendingStartRecordResult.error("PV_AUDIO_RECORDER_ERROR", "Unable to start audio engine: " + e.toString(), null);
               pendingStartRecordResult = null;
             }
           }

@@ -27,7 +27,7 @@ public class SwiftFlutterVoiceProcessorPlugin: NSObject, FlutterPlugin, FlutterS
                 self.start(frameLength: frameLength, sampleRate: sampleRate, result: result)
             }
             else{
-                result(FlutterError(code: "-1", message: "Invalid argument provided to audio engine", details: nil)) 
+                result(FlutterError(code: "PV_INVALID_ARGUMENT", message: "Invalid argument provided to VoiceProcessor.start", details: nil)) 
             }
         case "stop":
             self.stop()
@@ -68,12 +68,7 @@ public class SwiftFlutterVoiceProcessorPlugin: NSObject, FlutterPlugin, FlutterS
             self.bufferEventSink?(Array(buffer)) 
         }
         
-        let audioSession = AVAudioSession.sharedInstance()
-        if audioSession.recordPermission == .denied {
-            NSLog("Recording permission denied")
-            result(FlutterError(code: "-1", message: "Recording permission denied.", details: nil)) 
-            return
-        }
+        let audioSession = AVAudioSession.sharedInstance()        
         
         do{
             try audioSession.setCategory(AVAudioSession.Category.record)
@@ -84,7 +79,7 @@ public class SwiftFlutterVoiceProcessorPlugin: NSObject, FlutterPlugin, FlutterS
         }
         catch{
             NSLog("Unable to start audio engine: \(error)");
-            result(FlutterError(code: "-1", message: "Unable to start audio engine: \(error)", details: nil))
+            result(FlutterError(code: "PV_AUDIO_RECORDER_ERROR", message: "Unable to start audio engine: \(error)", details: nil))
             return
         }
         
