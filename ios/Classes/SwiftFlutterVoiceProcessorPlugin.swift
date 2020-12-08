@@ -22,13 +22,16 @@ public class SwiftFlutterVoiceProcessorPlugin: NSObject, FlutterPlugin, FlutterS
         switch call.method {
         case "start":
             let args = call.arguments as! [String : Any]
-            let frameLength:Int = args["frameLength"] as! Int
-            let sampleRate:Int = args["sampleRate"] as! Int
-            let didStart:Bool = self.start(frameLength: frameLength, sampleRate: sampleRate)
-            result(didStart)
+            if let frameLength = args["frameLength"] as? Int,
+                let sampleRate = args["sampleRate"] as? Int{
+                self.start(frameLength: frameLength, sampleRate: sampleRate, result: result)
+            }
+            else{
+                result(FlutterError(code: "-1", message: "Invalid argument provided to audio engine", details: nil)) 
+            }
         case "stop":
-            let didStop:Bool = self.stop()
-            result(didStop)
+            self.stop()
+            result(true)
         case "hasRecordAudioPermission":
             let hasRecordAudioPermission:Bool = self.checkRecordAudioPermission()
             result(hasRecordAudioPermission)
@@ -47,11 +50,12 @@ public class SwiftFlutterVoiceProcessorPlugin: NSObject, FlutterPlugin, FlutterS
         return nil
     }
     
-    public func start(frameLength: Int, sampleRate: Int) -> Bool {
+    public func start(frameLength: Int, sampleRate: Int, result: @escaping FlutterResult) -> Void {
         
         guard !isListening else {
             NSLog("Audio engine already running.")
-            return true
+            result(true)
+            return
         }
         
         audioInputEngine.audioInput = { [weak self] audio in
@@ -67,7 +71,8 @@ public class SwiftFlutterVoiceProcessorPlugin: NSObject, FlutterPlugin, FlutterS
         let audioSession = AVAudioSession.sharedInstance()
         if audioSession.recordPermission == .denied {
             NSLog("Recording permission denied")
-            return false
+            result(FlutterError(code: "-1", message: "Recording permission denied.", details: nil)) 
+            return
         }
         
         do{
@@ -78,23 +83,23 @@ public class SwiftFlutterVoiceProcessorPlugin: NSObject, FlutterPlugin, FlutterS
             try audioInputEngine.start(frameLength:frameLength, sampleRate:sampleRate)
         }
         catch{
-            NSLog("Unable to start audio engine");
-            return false;
+            NSLog("Unable to start audio engine: \(error)");
+            result(FlutterError(code: "-1", message: "Unable to start audio engine: \(error)", details: nil))
+            return
         }
         
         isListening = true
-        return true
+        result(true)
     }
     
-    private func stop() -> Bool{
+    private func stop() -> Void{
         guard isListening else {
-            return true
+            return
         }
         
         self.audioInputEngine.stop()
         
         isListening = false
-        return true
     }
     
     private func checkRecordAudioPermission() -> Bool{
