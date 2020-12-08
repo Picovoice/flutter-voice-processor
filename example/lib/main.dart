@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-
+import 'package:flutter/services.dart';
 import 'package:flutter_voice_processor/flutter_voice_processor.dart';
 
 void main() {
@@ -27,12 +27,6 @@ class _MyAppState extends State<MyApp> {
 
   void _initVoiceProcessor() async {
     _voiceProcessor = VoiceProcessor.getVoiceProcessor(512, 16000);
-
-    if (await _voiceProcessor.hasRecordAudioPermission()) {
-      print("Recording permission granted!");
-    } else {
-      print("Recording permission not granted");
-    }
   }
 
   Future<void> _startProcessing() async {
@@ -42,12 +36,22 @@ class _MyAppState extends State<MyApp> {
 
     _removeListener = _voiceProcessor.addListener(_onBufferReceived);
     _removeListener2 = _voiceProcessor.addListener(_onBufferReceived2);
-    await _voiceProcessor.start();
-
-    this.setState(() {
-      _isButtonDisabled = false;
-      _isProcessing = true;
-    });
+    try {
+      if (await _voiceProcessor.hasRecordAudioPermission()) {
+        await _voiceProcessor.start();
+        this.setState(() {
+          _isProcessing = true;
+        });
+      } else {
+        print("Recording permission not granted");
+      }
+    } on PlatformException catch (ex) {
+      print("Failed to start recorder: " + ex.toString());
+    } finally {
+      this.setState(() {
+        _isButtonDisabled = false;
+      });
+    }
   }
 
   void _onBufferReceived(dynamic eventData) {

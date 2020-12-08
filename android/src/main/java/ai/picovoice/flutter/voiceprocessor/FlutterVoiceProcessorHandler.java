@@ -45,6 +45,7 @@ public class FlutterVoiceProcessorHandler
   private final Activity activity;
   private final Handler eventHandler = new Handler();
   private Result pendingPermissionResult;
+  private Result pendingStartRecordResult;
   private EventSink bufferEventSink;
 
   FlutterVoiceProcessorHandler(Activity activity) {
@@ -54,20 +55,33 @@ public class FlutterVoiceProcessorHandler
   void close() {
     stop();
     pendingPermissionResult = null;
+    pendingStartRecordResult = null;
   }
 
   @Override
   public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
     switch (call.method) {
       case "start":
+        if (
+          !(call.argument("frameLength") instanceof Integer) ||
+          !(call.argument("sampleRate") instanceof Integer)
+        ) {
+          result.error(
+            "-1",
+            "Invalid argument provided to VoiceProcessor.start",
+            null
+          );
+          break;
+        }
+
         final Integer frameLength = call.argument("frameLength");
         final Integer sampleRate = call.argument("sampleRate");
-        final boolean didStart = start(frameLength, sampleRate);
-        result.success(didStart);
+        pendingStartRecordResult = result;
+        start(frameLength, sampleRate);
         break;
       case "stop":
-        final boolean didStop = stop();
-        result.success(didStop);
+        stop();
+        result.success(true);
         break;
       case "hasRecordAudioPermission":
         checkRecordAudioPermission(result);
@@ -87,9 +101,9 @@ public class FlutterVoiceProcessorHandler
     bufferEventSink = null;
   }
 
-  public boolean start(final Integer frameSize, final Integer sampleRate) {
+  public void start(final Integer frameSize, final Integer sampleRate) {
     if (started.get()) {
-      return true;
+      return;
     }
 
     Executors
@@ -106,21 +120,11 @@ public class FlutterVoiceProcessorHandler
           }
         }
       );
-
-    while (!started.get()) {
-      try {
-        Thread.sleep(10);
-      } catch (InterruptedException e) {
-        Log.e(LOG_TAG, e.toString());
-      }
-    }
-
-    return true;
   }
 
-  public boolean stop() {
+  public void stop() {
     if (!started.get()) {
-      return true;
+      return;
     }
 
     stop.set(true);
@@ -136,7 +140,6 @@ public class FlutterVoiceProcessorHandler
     started.set(false);
     stop.set(false);
     stopped.set(false);
-    return true;
   }
 
   private void checkRecordAudioPermission(@NonNull Result result) {
@@ -172,7 +175,7 @@ public class FlutterVoiceProcessorHandler
         ) {
           pendingPermissionResult.success(true);
         } else {
-          pendingPermissionResult.error("-2", "Permission denied", null);
+          pendingPermissionResult.success(false);
         }
         pendingPermissionResult = null;
         return true;
@@ -208,6 +211,19 @@ public class FlutterVoiceProcessorHandler
           if (firstBuffer) {
             started.set(true);
             firstBuffer = false;
+
+            // report success to user
+            eventHandler.post(
+              new Runnable() {
+                @Override
+                public void run() {
+                  if (pendingStartRecordResult != null) {
+                    pendingStartRecordResult.success(true);
+                    pendingStartRecordResult = null;
+                  }
+                }
+              }
+            );
           }
 
           final ArrayList<Short> bufferObj = new ArrayList();
@@ -230,6 +246,19 @@ public class FlutterVoiceProcessorHandler
       audioRecord.stop();
     } catch (IllegalArgumentException | IllegalStateException e) {
       Log.e(LOG_TAG, e.toString());
+
+      // report exception to user
+      eventHandler.post(
+        new Runnable() {
+          @Override
+          public void run() {
+            if (pendingStartRecordResult != null) {
+              pendingStartRecordResult.error("-1", e.toString(), null);
+              pendingStartRecordResult = null;
+            }
+          }
+        }
+      );
     } finally {
       if (audioRecord != null) {
         audioRecord.release();

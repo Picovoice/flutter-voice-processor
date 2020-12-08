@@ -39,14 +39,14 @@ class VoiceProcessor {
     };
   }
 
-  Future<bool> start() {
+  Future<void> start() {
     return _channel.invokeMethod('start', <String, dynamic>{
       'frameLength': _frameLength,
       'sampleRate': _sampleRate
     });
   }
 
-  Future<bool> stop() {
+  Future<void> stop() {
     return _channel.invokeMethod('stop');
   }
 
