@@ -230,7 +230,7 @@ public class FlutterVoiceProcessorHandler
             );
           }
 
-          final ArrayList<Short> bufferObj = new ArrayList();
+          final ArrayList<Short> bufferObj = new ArrayList<Short>();
           for (int i = 0; i < buffer.length; i++) bufferObj.add(buffer[i]);
 
           // send buffer event
@@ -257,7 +257,11 @@ public class FlutterVoiceProcessorHandler
           @Override
           public void run() {
             if (pendingStartRecordResult != null) {
-              pendingStartRecordResult.error("PV_AUDIO_RECORDER_ERROR", "Unable to start audio engine: " + e.toString(), null);
+              pendingStartRecordResult.error(
+                "PV_AUDIO_RECORDER_ERROR",
+                "Unable to start audio engine: " + e.toString(),
+                null
+              );
               pendingStartRecordResult = null;
             }
           }
