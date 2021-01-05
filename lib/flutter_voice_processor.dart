@@ -34,6 +34,8 @@ class VoiceProcessor {
     _bufferEventStream = _eventChannel.receiveBroadcastStream();
   }
 
+  /// Singleton getter for VoiceProcessor that delivers frames of size
+  /// [frameLenth] and at a sample rate of [sampleRate]
   static getVoiceProcessor(int frameLength, int sampleRate) {
     if (_instance == null) {
       _instance = new VoiceProcessor._(frameLength, sampleRate);
@@ -44,6 +46,8 @@ class VoiceProcessor {
     return _instance;
   }
 
+  /// Add a [listener] function that triggers every time the VoiceProcessor
+  /// delivers a frame of audio
   RemoveListener addListener(BufferListener listener) {
     var subscription = _bufferEventStream.listen(listener, cancelOnError: true);
     return () {
@@ -51,6 +55,8 @@ class VoiceProcessor {
     };
   }
 
+  /// Starts audio recording
+  /// throws [PlatformError] if native audio engine doesn't start
   Future<void> start() async {
     if (_isRecording) {
       return;
@@ -62,6 +68,7 @@ class VoiceProcessor {
     _isRecording = true;
   }
 
+  /// Stops audio recording
   Future<void> stop() async {
     if (!_isRecording) {
       return;
@@ -70,6 +77,8 @@ class VoiceProcessor {
     _isRecording = false;
   }
 
+  /// Checks if user has granted recording permission and
+  /// asks for it if they haven't
   Future<bool> hasRecordAudioPermission() {
     return _channel.invokeMethod('hasRecordAudioPermission');
   }
