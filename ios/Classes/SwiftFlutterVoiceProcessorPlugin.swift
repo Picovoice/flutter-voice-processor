@@ -82,7 +82,7 @@ public class SwiftFlutterVoiceProcessorPlugin: NSObject, FlutterPlugin, FlutterS
         let audioSession = AVAudioSession.sharedInstance()        
         
         do{
-            try audioSession.setCategory(AVAudioSession.Category.record)
+            try audioSession.setCategory(AVAudioSession.Category.playAndRecord)
             try audioSession.setMode(AVAudioSession.Mode.measurement)
             try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
             
@@ -104,6 +104,13 @@ public class SwiftFlutterVoiceProcessorPlugin: NSObject, FlutterPlugin, FlutterS
         }
         
         self.audioInputEngine.stop()
+
+         do {
+             try AVAudioSession.sharedInstance().setActive(false)
+         }
+         catch {
+             NSLog("Unable to explicitly deactivate AVAudioSession: \(error)");
+         }
         
         isListening = false
     }

@@ -1,6 +1,6 @@
 name: flutter_voice_processor
 description: A Flutter package plugin for delivering microphone audio buffers to shared code.
-version: 1.0.0
+version: 1.0.1
 author:
 homepage:
 
