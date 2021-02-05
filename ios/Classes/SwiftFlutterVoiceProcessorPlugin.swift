@@ -82,7 +82,7 @@ public class SwiftFlutterVoiceProcessorPlugin: NSObject, FlutterPlugin, FlutterS
         let audioSession = AVAudioSession.sharedInstance()        
         
         do{
-            try audioSession.setCategory(AVAudioSession.Category.playAndRecord, options: [.mixWithOthers, .defaultToSpeaker])
+            try audioSession.setCategory(AVAudioSession.Category.playAndRecord, options: [.mixWithOthers, .defaultToSpeaker, .allowBluetooth])
             try audioSession.setMode(AVAudioSession.Mode.voiceChat)
             try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
             

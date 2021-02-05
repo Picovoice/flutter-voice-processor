@@ -3,3 +3,6 @@
 
 ## [1.0.1] - 2021-01-05
 * Fixed audio session hold issue
+
+## [1.0.2] - 2021-02-04
+* Minor bug fix
