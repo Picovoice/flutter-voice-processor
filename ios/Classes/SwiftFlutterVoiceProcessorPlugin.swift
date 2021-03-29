@@ -79,12 +79,11 @@ public class SwiftFlutterVoiceProcessorPlugin: NSObject, FlutterPlugin, FlutterS
             self.bufferEventSink?(Array(buffer)) 
         }
         
-        let audioSession = AVAudioSession.sharedInstance()        
-        
+        let audioSession = AVAudioSession.sharedInstance()
+
         do{
-            try audioSession.setCategory(AVAudioSession.Category.playAndRecord, options: [.mixWithOthers, .defaultToSpeaker, .allowBluetooth])
-            try audioSession.setMode(AVAudioSession.Mode.voiceChat)
-            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+            
+            try audioSession.setCategory(AVAudioSession.Category.playAndRecord, options: [.mixWithOthers, .allowBluetooth, .defaultToSpeaker])
             
             try audioInputEngine.start(frameLength:frameLength, sampleRate:sampleRate)
         }
@@ -104,13 +103,6 @@ public class SwiftFlutterVoiceProcessorPlugin: NSObject, FlutterPlugin, FlutterS
         }
         
         self.audioInputEngine.stop()
-
-          do {
-              try AVAudioSession.sharedInstance().setActive(false)
-          }
-          catch {
-              NSLog("Unable to explicitly deactivate AVAudioSession: \(error)");
-          }
         
         isListening = false
     }
@@ -160,8 +152,10 @@ public class SwiftFlutterVoiceProcessorPlugin: NSObject, FlutterPlugin, FlutterS
             guard let audioQueue = audioQueue else {
                 return
             }
+            AudioQueueFlush(audioQueue)
             AudioQueueStop(audioQueue, true)
-            AudioQueueDispose(audioQueue, false)
+            AudioQueueDispose(audioQueue, true)
+            audioInput = nil
         }
         
         private func createAudioQueueCallback() -> AudioQueueInputCallback {
