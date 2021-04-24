@@ -9,3 +9,6 @@
 
 ## [1.0.3] - 2021-03-29
 * Minor bug fix
+
+## [2.0.0] - 2021-04-24
+* Migrating to null safety
