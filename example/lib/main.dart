@@ -48,7 +48,7 @@ class _MyAppState extends State<MyApp> {
     _removeListener = _voiceProcessor?.addListener(_onBufferReceived);
     _removeListener2 = _voiceProcessor?.addListener(_onBufferReceived2);
     try {
-      if (await _voiceProcessor?.hasRecordAudioPermission() ?? true) {
+      if (await _voiceProcessor?.hasRecordAudioPermission() ?? false) {
         await _voiceProcessor?.start();
         this.setState(() {
           _isProcessing = true;
