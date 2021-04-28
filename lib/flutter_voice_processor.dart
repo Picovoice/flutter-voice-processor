@@ -17,10 +17,10 @@ typedef void BufferListener(dynamic buffer);
 typedef void RemoveListener();
 
 class VoiceProcessor {
-  static VoiceProcessor _instance;
+  static VoiceProcessor? _instance;
   int _frameLength;
   int _sampleRate;
-  Stream _bufferEventStream;
+  Stream? _bufferEventStream;
   bool _isRecording = false;
 
   bool get isRecording => this._isRecording;
@@ -40,8 +40,8 @@ class VoiceProcessor {
     if (_instance == null) {
       _instance = new VoiceProcessor._(frameLength, sampleRate);
     } else {
-      _instance._frameLength = frameLength;
-      _instance._sampleRate = sampleRate;
+      _instance?._frameLength = frameLength;
+      _instance?._sampleRate = sampleRate;
     }
     return _instance;
   }
@@ -49,9 +49,9 @@ class VoiceProcessor {
   /// Add a [listener] function that triggers every time the VoiceProcessor
   /// delivers a frame of audio
   RemoveListener addListener(BufferListener listener) {
-    var subscription = _bufferEventStream.listen(listener, cancelOnError: true);
+    var subscription = _bufferEventStream?.listen(listener, cancelOnError: true);
     return () {
-      subscription.cancel();
+      subscription?.cancel();
     };
   }
 
@@ -79,7 +79,7 @@ class VoiceProcessor {
 
   /// Checks if user has granted recording permission and
   /// asks for it if they haven't
-  Future<bool> hasRecordAudioPermission() {
+  Future<bool?> hasRecordAudioPermission() {
     return _channel.invokeMethod('hasRecordAudioPermission');
   }
 }
