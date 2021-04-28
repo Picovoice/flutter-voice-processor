@@ -26,9 +26,9 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   bool _isButtonDisabled = false;
   bool _isProcessing = false;
-  VoiceProcessor _voiceProcessor;
-  Function _removeListener;
-  Function _removeListener2;
+  VoiceProcessor? _voiceProcessor;
+  Function? _removeListener;
+  Function? _removeListener2;
 
   @override
   void initState() {
@@ -45,11 +45,11 @@ class _MyAppState extends State<MyApp> {
       _isButtonDisabled = true;
     });
 
-    _removeListener = _voiceProcessor.addListener(_onBufferReceived);
-    _removeListener2 = _voiceProcessor.addListener(_onBufferReceived2);
+    _removeListener = _voiceProcessor?.addListener(_onBufferReceived);
+    _removeListener2 = _voiceProcessor?.addListener(_onBufferReceived2);
     try {
-      if (await _voiceProcessor.hasRecordAudioPermission()) {
-        await _voiceProcessor.start();
+      if (await _voiceProcessor?.hasRecordAudioPermission() ?? true) {
+        await _voiceProcessor?.start();
         this.setState(() {
           _isProcessing = true;
         });
@@ -78,9 +78,9 @@ class _MyAppState extends State<MyApp> {
       _isButtonDisabled = true;
     });
 
-    await _voiceProcessor.stop();
-    _removeListener();
-    _removeListener2();
+    await _voiceProcessor?.stop();
+    _removeListener?.call();
+    _removeListener2?.call();
 
     this.setState(() {
       _isButtonDisabled = false;
@@ -111,7 +111,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   Widget _buildToggleProcessingButton() {
-    return new RaisedButton(
+    return new ElevatedButton(
       onPressed: _isButtonDisabled ? null : _toggleProcessing,
       child: Text(_isProcessing ? "Stop" : "Start",
           style: TextStyle(fontSize: 20)),
