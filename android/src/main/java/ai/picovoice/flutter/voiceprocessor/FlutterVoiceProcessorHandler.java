@@ -46,14 +46,14 @@ public class FlutterVoiceProcessorHandler
   private static final int RECORD_AUDIO_REQUEST_CODE =
     FlutterVoiceProcessorHandler.class.hashCode();
 
-  private final AtomicBoolean started = new AtomicBoolean(false);
-  private final AtomicBoolean stop = new AtomicBoolean(false);
-  private final AtomicBoolean stopped = new AtomicBoolean(false);
+  private final AtomicBoolean isCapturingAudio = new AtomicBoolean(false);
+  private final AtomicBoolean stopRequested = new AtomicBoolean(false);
 
   private final Activity activity;
   private final Handler eventHandler = new Handler();
   private Result pendingPermissionResult;
   private Result pendingStartRecordResult;
+  private Result pendingStopRecordResult;
   private EventSink bufferEventSink;
 
   FlutterVoiceProcessorHandler(Activity activity) {
@@ -64,6 +64,7 @@ public class FlutterVoiceProcessorHandler
     stop();
     pendingPermissionResult = null;
     pendingStartRecordResult = null;
+    pendingStopRecordResult = null;
   }
 
   @Override
@@ -88,8 +89,8 @@ public class FlutterVoiceProcessorHandler
         start(frameLength, sampleRate);
         break;
       case "stop":
-        stop();
-        result.success(true);
+        pendingStopRecordResult = result;
+        stop();        
         break;
       case "hasRecordAudioPermission":
         checkRecordAudioPermission(result);
@@ -110,7 +111,7 @@ public class FlutterVoiceProcessorHandler
   }
 
   public void start(final Integer frameSize, final Integer sampleRate) {
-    if (started.get()) {
+    if (isCapturingAudio.get()) {
       if (pendingStartRecordResult != null) {
         pendingStartRecordResult.success(true);
         pendingStartRecordResult = null;
@@ -135,23 +136,11 @@ public class FlutterVoiceProcessorHandler
   }
 
   public void stop() {
-    if (!started.get()) {
+    if (!isCapturingAudio.get()) {
       return;
     }
 
-    stop.set(true);
-
-    while (!stopped.get()) {
-      try {
-        Thread.sleep(10);
-      } catch (InterruptedException e) {
-        Log.e(LOG_TAG, e.toString());
-      }
-    }
-
-    started.set(false);
-    stop.set(false);
-    stopped.set(false);
+    stopRequested.set(true);
   }
 
   private void checkRecordAudioPermission(@NonNull Result result) {
@@ -218,10 +207,10 @@ public class FlutterVoiceProcessorHandler
 
       audioRecord.startRecording();
       boolean firstBuffer = true;
-      while (!stop.get()) {
+      while (!stopRequested.get()) {
         if (audioRecord.read(buffer, 0, buffer.length) == buffer.length) {
           if (firstBuffer) {
-            started.set(true);
+            isCapturingAudio.set(true);
             firstBuffer = false;
 
             // report success to user
@@ -276,11 +265,25 @@ public class FlutterVoiceProcessorHandler
         }
       );
     } finally {
+      // report success to user
+      eventHandler.post(
+        new Runnable() {
+          @Override
+          public void run() {
+            if (pendingStopRecordResult != null) {
+              pendingStopRecordResult.success(true);
+              pendingStopRecordResult = null;
+            }
+          }
+        }
+      );
+
       if (audioRecord != null) {
         audioRecord.release();
       }
 
-      stopped.set(true);
+      isCapturingAudio.set(false);
+      stopRequested.set(false);
     }
   }
 }

@@ -49,7 +49,8 @@ class VoiceProcessor {
   /// Add a [listener] function that triggers every time the VoiceProcessor
   /// delivers a frame of audio
   RemoveListener addListener(BufferListener listener) {
-    var subscription = _bufferEventStream?.listen(listener, cancelOnError: true);
+    var subscription =
+        _bufferEventStream?.listen(listener, cancelOnError: true);
     return () {
       subscription?.cancel();
     };
