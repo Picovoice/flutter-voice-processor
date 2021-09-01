@@ -26,6 +26,7 @@ public class FlutterVoiceProcessorPlugin
 
   private MethodChannel methodChannel;
   private EventChannel eventChannel;
+  private EventChannel errorEventChannel;
   private FlutterVoiceProcessorHandler voiceProcessorHandler;
   private FlutterPluginBinding pluginBinding;
   private ActivityPluginBinding activityBinding;
@@ -60,6 +61,13 @@ public class FlutterVoiceProcessorPlugin
         "flutter_voice_processor_events"
       );
     eventChannel.setStreamHandler(voiceProcessorHandler);
+
+    errorEventChannel =
+      new EventChannel(
+        pluginBinding.getBinaryMessenger(),
+        "flutter_voice_processor_error_events"
+      );
+    errorEventChannel.setStreamHandler(voiceProcessorHandler);
   }
 
   @Override
@@ -70,6 +78,7 @@ public class FlutterVoiceProcessorPlugin
     activityBinding = null;
     methodChannel.setMethodCallHandler(null);
     eventChannel.setStreamHandler(null);
+    errorEventChannel.setStreamHandler(null);
     voiceProcessorHandler = null;
     methodChannel = null;
   }

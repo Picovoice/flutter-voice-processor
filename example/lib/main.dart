@@ -29,6 +29,7 @@ class _MyAppState extends State<MyApp> {
   VoiceProcessor? _voiceProcessor;
   Function? _removeListener;
   Function? _removeListener2;
+  Function? _errorListener;
 
   @override
   void initState() {
@@ -47,6 +48,7 @@ class _MyAppState extends State<MyApp> {
 
     _removeListener = _voiceProcessor?.addListener(_onBufferReceived);
     _removeListener2 = _voiceProcessor?.addListener(_onBufferReceived2);
+    _errorListener = _voiceProcessor?.addErrorListener(_onErrorReceived);
     try {
       if (await _voiceProcessor?.hasRecordAudioPermission() ?? false) {
         await _voiceProcessor?.start();
@@ -73,6 +75,11 @@ class _MyAppState extends State<MyApp> {
     print("Listener 2 received buffer of size ${eventData.length}!");
   }
 
+  void _onErrorReceived(dynamic eventData) {
+    String errorMsg = eventData as String;
+    print(errorMsg);
+  }
+
   Future<void> _stopProcessing() async {
     this.setState(() {
       _isButtonDisabled = true;
@@ -81,6 +88,7 @@ class _MyAppState extends State<MyApp> {
     await _voiceProcessor?.stop();
     _removeListener?.call();
     _removeListener2?.call();
+    _errorListener?.call();
 
     this.setState(() {
       _isButtonDisabled = false;
