@@ -1,5 +1,5 @@
 //
-// Copyright 2020 Picovoice Inc.
+// Copyright 2020-2021 Picovoice Inc.
 //
 // You may not use this file except in compliance with the license. A copy of the license is located in the "LICENSE"
 // file accompanying this source.
@@ -55,6 +55,7 @@ public class FlutterVoiceProcessorHandler
   private Result pendingStartRecordResult;
   private Result pendingStopRecordResult;
   private EventSink bufferEventSink;
+  private EventSink errorEventSink;
 
   FlutterVoiceProcessorHandler(Activity activity) {
     this.activity = activity;
@@ -102,12 +103,25 @@ public class FlutterVoiceProcessorHandler
 
   @Override
   public void onListen(Object listener, EventSink eventSink) {
-    bufferEventSink = eventSink;
+    String type = (String) listener;
+    if(type.equals("buffer")) {
+      bufferEventSink = eventSink;  
+    }
+    else if (type.equals("error")) {
+      errorEventSink = eventSink;  
+    }
   }
 
   @Override
   public void onCancel(Object listener) {
-    bufferEventSink = null;
+    String type = (String) listener;
+    if(type.equals("buffer")) {
+      bufferEventSink = null;
+    }
+    else if (type.equals("error")) {
+      errorEventSink = null;  
+    }
+    
   }
 
   public void start(final Integer frameSize, final Integer sampleRate) {
@@ -204,7 +218,7 @@ public class FlutterVoiceProcessorHandler
           AudioFormat.ENCODING_PCM_16BIT,
           bufferSize
         );
-
+         
       audioRecord.startRecording();
       boolean firstBuffer = true;
       while (!stopRequested.get()) {
@@ -245,9 +259,7 @@ public class FlutterVoiceProcessorHandler
       }
 
       audioRecord.stop();
-    } catch (IllegalArgumentException | IllegalStateException e) {
-      Log.e(LOG_TAG, e.toString());
-
+    } catch (final Exception e) {
       // report exception to user
       eventHandler.post(
         new Runnable() {
@@ -260,6 +272,9 @@ public class FlutterVoiceProcessorHandler
                 null
               );
               pendingStartRecordResult = null;
+            }
+            else if (errorEventSink != null) {
+              errorEventSink.success("PV_AUDIO_RECORDER_ERROR: " + e.toString());
             }
           }
         }

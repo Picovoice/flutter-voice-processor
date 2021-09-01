@@ -15,3 +15,6 @@
 
 ## [1.0.5] - 2021-04-30
 * Improved Android stop routine
+
+## [1.0.6] - 2021-09-01
+* Added native error callback

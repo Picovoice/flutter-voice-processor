@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'flutter_voice_processor'
-  s.version          = '1.0.0'
+  s.version          = '1.0.6'
   s.summary          = 'A Flutter package plugin for real-time voice processing.'
   s.description      = <<-DESC
   A Flutter package plugin for real-time voice processing.
