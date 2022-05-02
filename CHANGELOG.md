@@ -18,3 +18,7 @@
 
 ## [1.0.6] - 2021-09-01
 * Added native error callback
+
+## [1.0.7] - 2022-05-2
+* Updated package settings
+* Fixed deprecation warning
