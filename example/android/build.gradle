@@ -9,12 +9,6 @@ buildscript {
     }
 }
 
-gradle.projectsEvaluated {
-    tasks.withType(JavaCompile){
-        options.compilerArgs << "-Xlint:deprecation"
-    }
-}
-
 allprojects {
     repositories {
         google()
