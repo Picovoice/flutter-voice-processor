@@ -18,6 +18,7 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Process;
 import android.util.Log;
 
@@ -50,7 +51,7 @@ public class FlutterVoiceProcessorHandler
   private final AtomicBoolean stopRequested = new AtomicBoolean(false);
 
   private final Activity activity;
-  private final Handler eventHandler = new Handler();
+  private final Handler eventHandler = new Handler(Looper.getMainLooper());
   private Result pendingPermissionResult;
   private Result pendingStartRecordResult;
   private Result pendingStopRecordResult;
