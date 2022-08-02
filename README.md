@@ -1,10 +1,12 @@
 # flutter-voice-processor
 
+Made in Vancouver, Canada by [Picovoice](https://picovoice.ai)
+
 A Flutter plugin for real-time voice processing.
 
 ## Usage
 
-Create: 
+Create:
 ```dart
 int frameLength = 512;
 int sampleRate = 16000;
@@ -19,7 +21,7 @@ Start audio:
 ```dart
 try {
     if (await _voiceProcessor.hasRecordAudioPermission()) {
-        await _voiceProcessor.start();    
+        await _voiceProcessor.start();
     } else {
         print("Recording permission not granted");
     }
