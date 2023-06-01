@@ -28,3 +28,6 @@
 
 ## [1.0.9] - 2022-09-21
 * Fix onCancel nil error
+
+## [1.0.10] - 2023-06-01
+* Improved hot restart behaviour on Android

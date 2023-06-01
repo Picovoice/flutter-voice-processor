@@ -1,6 +1,6 @@
 name: flutter_voice_processor
 description: A Flutter plugin that delivers audio buffers for real-time processing.
-version: 1.0.9
+version: 1.0.10
 homepage: https://picovoice.ai/
 repository: https://github.com/Picovoice/flutter-voice-processor
 

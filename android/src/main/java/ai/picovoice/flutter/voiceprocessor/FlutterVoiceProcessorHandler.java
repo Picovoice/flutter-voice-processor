@@ -1,5 +1,5 @@
 //
-// Copyright 2020-2021 Picovoice Inc.
+// Copyright 2020-2023 Picovoice Inc.
 //
 // You may not use this file except in compliance with the license. A copy of the license is located in the "LICENSE"
 // file accompanying this source.
@@ -92,7 +92,7 @@ public class FlutterVoiceProcessorHandler
         break;
       case "stop":
         pendingStopRecordResult = result;
-        stop();        
+        stop();
         break;
       case "hasRecordAudioPermission":
         checkRecordAudioPermission(result);
@@ -104,25 +104,28 @@ public class FlutterVoiceProcessorHandler
 
   @Override
   public void onListen(Object listener, EventSink eventSink) {
-    String type = (String) listener;
-    if(type.equals("buffer")) {
-      bufferEventSink = eventSink;  
-    }
-    else if (type.equals("error")) {
-      errorEventSink = eventSink;  
+    if (listener != null) {
+      String type = (String) listener;
+      if(type.equals("buffer")) {
+        bufferEventSink = eventSink;
+      }
+      else if (type.equals("error")) {
+        errorEventSink = eventSink;
+      }
     }
   }
 
   @Override
   public void onCancel(Object listener) {
-    String type = (String) listener;
-    if(type.equals("buffer")) {
-      bufferEventSink = null;
+    if (listener != null) {
+      String type = (String) listener;
+      if(type.equals("buffer")) {
+        bufferEventSink = null;
+      }
+      else if (type.equals("error")) {
+        errorEventSink = null;
+      }
     }
-    else if (type.equals("error")) {
-      errorEventSink = null;  
-    }
-    
   }
 
   public void start(final Integer frameSize, final Integer sampleRate) {
@@ -219,7 +222,7 @@ public class FlutterVoiceProcessorHandler
           AudioFormat.ENCODING_PCM_16BIT,
           bufferSize
         );
-         
+
       audioRecord.startRecording();
       boolean firstBuffer = true;
       while (!stopRequested.get()) {
