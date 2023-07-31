@@ -1,5 +1,5 @@
 //
-// Copyright 2020-2021 Picovoice Inc.
+// Copyright 2020-2023 Picovoice Inc.
 //
 // You may not use this file except in compliance with the license. A copy of the license is located in the "LICENSE"
 // file accompanying this source.
@@ -13,85 +13,125 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 
-typedef void EventListener(dynamic buffer);
+class VoiceProcessorException implements Exception {
+  final String? message;
+  VoiceProcessorException([this.message]);
+}
 
-typedef void RemoveListener();
+typedef void VoiceProcessorFrameListener(List<int> frame);
+typedef void VoiceProcessorErrorListener(VoiceProcessorException error);
 
 class VoiceProcessor {
   static VoiceProcessor? _instance;
-  int _frameLength;
-  int _sampleRate;
-  Stream? _bufferEventStream;
+  Stream? _frameEventStream;
   Stream? _errorEventStream;
-
-  bool _isRecording = false;
-
-  bool get isRecording => this._isRecording;
 
   final MethodChannel _channel =
       const MethodChannel('flutter_voice_processor_methods');
-  final EventChannel _eventChannel =
-      const EventChannel('flutter_voice_processor_events');
+  final EventChannel _frameEventsChannel =
+      const EventChannel('flutter_voice_processor_frame_events');
   final EventChannel _errorEventsChannel =
       const EventChannel('flutter_voice_processor_error_events');
 
-  VoiceProcessor._(this._frameLength, this._sampleRate) {
-    _bufferEventStream = _eventChannel.receiveBroadcastStream("buffer");
-    _errorEventStream = _errorEventsChannel.receiveBroadcastStream("error");
+  List<VoiceProcessorFrameListener> _frameListeners = [];
+  List<VoiceProcessorErrorListener> _errorListeners = [];
+
+  void onFrame(List<int> frame) {
+    for (VoiceProcessorFrameListener frameListener in _frameListeners) {
+      frameListener(frame);
+    }
   }
 
-  /// Singleton getter for VoiceProcessor that delivers frames of size
-  /// [frameLenth] and at a sample rate of [sampleRate]
-  static getVoiceProcessor(int frameLength, int sampleRate) {
-    if (_instance == null) {
-      _instance = new VoiceProcessor._(frameLength, sampleRate);
+  void onError(String error) {
+    if (_errorListeners.isNotEmpty) {
+      for (VoiceProcessorErrorListener errorListener in _errorListeners) {
+        errorListener(
+            VoiceProcessorException("Failed to cast incoming error data."));
+      }
     } else {
-      _instance?._frameLength = frameLength;
-      _instance?._sampleRate = sampleRate;
+      print(error);
+    }
+  }
+
+  VoiceProcessor._() {
+    _frameEventStream = _frameEventsChannel.receiveBroadcastStream("frame");
+    _frameEventStream?.listen((event) {
+      try {
+        List<int> frame = (event as List<dynamic>).cast<int>();
+        onFrame(frame);
+      } on Error {
+        onError("Failed to cast incoming frame data.");
+      }
+    }, cancelOnError: true);
+
+    _errorEventStream = _errorEventsChannel.receiveBroadcastStream("error");
+    _errorEventStream?.listen((event) {
+      try {
+        String error = event as String;
+        onError(error);
+      } on Error {
+        onError("Unable to cast incoming error event.");
+      }
+    }, cancelOnError: true);
+  }
+
+  /// Singleton instance of VoiceProcessor
+  static VoiceProcessor? get instance {
+    if (_instance == null) {
+      _instance = new VoiceProcessor._();
     }
     return _instance;
   }
 
-  /// Add a [listener] function that triggers every time the VoiceProcessor
-  /// delivers a frame of audio
-  RemoveListener addListener(EventListener listener) {
-    var subscription =
-        _bufferEventStream?.listen(listener, cancelOnError: true);
-    return () {
-      subscription?.cancel();
-    };
+  int get numFrameListeners => _frameListeners.length;
+  int get numErrorListeners => _errorListeners.length;
+
+  void addFrameListener(VoiceProcessorFrameListener listener) {
+    _frameListeners.add(listener);
   }
 
-  /// Add an [errorListener] function that triggers when a the native audio
-  /// recorder encounters an error
-  RemoveListener addErrorListener(EventListener errorListener) {
-    var subscription =
-        _errorEventStream?.listen(errorListener, cancelOnError: true);
-    return () {
-      subscription?.cancel();
-    };
+  void addFrameListeners(List<VoiceProcessorFrameListener> listeners) {
+    _frameListeners.addAll(listeners);
+  }
+
+  void removeFrameListener(VoiceProcessorFrameListener listener) {
+    _frameListeners.remove(listener);
+  }
+
+  void removeFrameListeners(List<VoiceProcessorFrameListener> listeners) {
+    for (VoiceProcessorFrameListener listener in listeners) {
+      _frameListeners.remove(listener);
+    }
+  }
+
+  void clearFrameListeners() {
+    _frameListeners.clear();
+  }
+
+  void addErrorListener(VoiceProcessorErrorListener errorListener) {
+    _errorListeners.add(errorListener);
+  }
+
+  void removeErrorListener(VoiceProcessorErrorListener errorListener) {
+    _errorListeners.remove(errorListener);
+  }
+
+  void clearErrorListeners() {
+    _errorListeners.clear();
   }
 
   /// Starts audio recording
   /// throws [PlatformError] if native audio engine doesn't start
-  Future<void> start() async {
-    if (_isRecording) {
-      return;
-    }
+  Future<void> start(int frameLength, int sampleRate) async {
     await _channel.invokeMethod('start', <String, dynamic>{
-      'frameLength': _frameLength,
-      'sampleRate': _sampleRate
+      'frameLength': frameLength,
+      'sampleRate': sampleRate
     });
-    _isRecording = true;
   }
 
   /// Stops audio recording
   Future<void> stop() async {
-    if (!_isRecording) {
-      return;
-    }
     await _channel.invokeMethod('stop');
-    _isRecording = false;
   }
 
   /// Checks if user has granted recording permission and

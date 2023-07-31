@@ -25,7 +25,7 @@ public class FlutterVoiceProcessorPlugin
   private static final String LOG_TAG = "FlutterVoiceProcessorPlugin";
 
   private MethodChannel methodChannel;
-  private EventChannel eventChannel;
+  private EventChannel frameEventChannel;
   private EventChannel errorEventChannel;
   private FlutterVoiceProcessorHandler voiceProcessorHandler;
   private FlutterPluginBinding pluginBinding;
@@ -55,12 +55,12 @@ public class FlutterVoiceProcessorPlugin
       );
     methodChannel.setMethodCallHandler(voiceProcessorHandler);
 
-    eventChannel =
+    frameEventChannel =
       new EventChannel(
         pluginBinding.getBinaryMessenger(),
-        "flutter_voice_processor_events"
+        "flutter_voice_processor_frame_events"
       );
-    eventChannel.setStreamHandler(voiceProcessorHandler);
+    frameEventChannel.setStreamHandler(voiceProcessorHandler);
 
     errorEventChannel =
       new EventChannel(
@@ -77,7 +77,7 @@ public class FlutterVoiceProcessorPlugin
     );
     activityBinding = null;
     methodChannel.setMethodCallHandler(null);
-    eventChannel.setStreamHandler(null);
+    frameEventChannel.setStreamHandler(null);
     errorEventChannel.setStreamHandler(null);
     voiceProcessorHandler = null;
     methodChannel = null;
