@@ -42,14 +42,13 @@ class VoiceProcessor {
     }
   }
 
-  void onError(String error) {
+  void onError(String errorMessage) {
     if (_errorListeners.isNotEmpty) {
       for (VoiceProcessorErrorListener errorListener in _errorListeners) {
-        errorListener(
-            VoiceProcessorException("Failed to cast incoming error data."));
+        errorListener(VoiceProcessorException(errorMessage));
       }
     } else {
-      print(error);
+      print("VoiceProcessorException: " + errorMessage);
     }
   }
 
@@ -60,7 +59,7 @@ class VoiceProcessor {
         List<int> frame = (event as List<dynamic>).cast<int>();
         onFrame(frame);
       } on Error {
-        onError("Failed to cast incoming frame data.");
+        onError("VoiceProcessorException: Failed to cast incoming frame data");
       }
     }, cancelOnError: true);
 
@@ -70,7 +69,8 @@ class VoiceProcessor {
         String error = event as String;
         onError(error);
       } on Error {
-        onError("Unable to cast incoming error event.");
+        onError(
+            "VoiceProcessorException: Unable to cast incoming error event.");
       }
     }, cancelOnError: true);
   }
@@ -134,8 +134,13 @@ class VoiceProcessor {
     await _channel.invokeMethod('stop');
   }
 
-  /// Checks if user has granted recording permission and
-  /// asks for it if they haven't
+  /// Checks if audio recording is in progress
+  Future<bool?> isRecording() async {
+    return _channel.invokeMethod('isRecording');
+  }
+
+  /// Checks if user has granted audio recording permission.
+  /// Will prompt the user if permission has not yet been granted.
   Future<bool?> hasRecordAudioPermission() {
     return _channel.invokeMethod('hasRecordAudioPermission');
   }

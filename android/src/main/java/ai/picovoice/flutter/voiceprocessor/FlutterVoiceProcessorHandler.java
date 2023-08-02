@@ -20,11 +20,12 @@ import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 
+import java.util.ArrayList;
+
 import ai.picovoice.android.voiceprocessor.VoiceProcessor;
 import ai.picovoice.android.voiceprocessor.VoiceProcessorErrorListener;
 import ai.picovoice.android.voiceprocessor.VoiceProcessorException;
 import ai.picovoice.android.voiceprocessor.VoiceProcessorFrameListener;
-
 import io.flutter.plugin.common.EventChannel.EventSink;
 import io.flutter.plugin.common.EventChannel.StreamHandler;
 import io.flutter.plugin.common.MethodCall;
@@ -48,49 +49,54 @@ public class FlutterVoiceProcessorHandler
     private Result pendingPermissionResult;
     private Result pendingStartRecordResult;
     private Result pendingStopRecordResult;
+
     private EventSink frameEventSink;
-    private final VoiceProcessorFrameListener frameListener = new VoiceProcessorFrameListener() {
-        @Override
-        public void onFrame(final short[] frame) {
-            eventHandler.post(
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            if (frameEventSink != null) {
-                                frameEventSink.success(frame);
-                            }
-                        }
-                    }
-            );
-        }
-    };
     private EventSink errorEventSink;
-    private final VoiceProcessorErrorListener errorListener = new VoiceProcessorErrorListener() {
-        @Override
-        public void onError(VoiceProcessorException error) {
-            eventHandler.post(
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            if (pendingStartRecordResult != null) {
-                                pendingStartRecordResult.error(
-                                        "PV_AUDIO_RECORDER_ERROR",
-                                        "Unable to start audio recording: " + error,
-                                        null
-                                );
-                                pendingStartRecordResult = null;
-                            } else if (errorEventSink != null) {
-                                errorEventSink.success("PV_AUDIO_RECORDER_ERROR: " + error);
-                            }
-                        }
-                    }
-            );
-        }
-    };
 
     FlutterVoiceProcessorHandler(Activity activity) {
         this.activity = activity;
         this.voiceProcessor = VoiceProcessor.getInstance();
+        this.voiceProcessor.addErrorListener(new VoiceProcessorErrorListener() {
+            @Override
+            public void onError(VoiceProcessorException error) {
+                eventHandler.post(
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                if (pendingStartRecordResult != null) {
+                                    pendingStartRecordResult.error(
+                                            "PV_AUDIO_RECORDER_ERROR",
+                                            "Unable to start audio recording: " + error,
+                                            null
+                                    );
+                                    pendingStartRecordResult = null;
+                                } else if (errorEventSink != null) {
+                                    errorEventSink.success("PV_AUDIO_RECORDER_ERROR: " + error);
+                                }
+                            }
+                        }
+                );
+            }
+        });
+        this.voiceProcessor.addFrameListener(new VoiceProcessorFrameListener() {
+            @Override
+            public void onFrame(final short[] frame) {
+                eventHandler.post(
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                if (frameEventSink != null) {
+                                    final ArrayList<Short> frameArrayList = new ArrayList<>();
+                                    for (short sample : frame) {
+                                        frameArrayList.add(sample);
+                                    }
+                                    frameEventSink.success(frameArrayList);
+                                }
+                            }
+                        }
+                );
+            }
+        });
     }
 
     void close() {
@@ -122,6 +128,9 @@ public class FlutterVoiceProcessorHandler
             case "stop":
                 pendingStopRecordResult = result;
                 stop();
+                break;
+            case "isRecording":
+                result.success(voiceProcessor.getIsRecording());
                 break;
             case "hasRecordAudioPermission":
                 hasRecordAudioPermission(result);
@@ -157,8 +166,6 @@ public class FlutterVoiceProcessorHandler
 
     public void start(final Integer frameLength, final Integer sampleRate) {
         try {
-            voiceProcessor.addErrorListener(errorListener);
-            voiceProcessor.addFrameListener(frameListener);
             voiceProcessor.start(frameLength, sampleRate);
             eventHandler.post(
                     new Runnable() {
@@ -194,11 +201,7 @@ public class FlutterVoiceProcessorHandler
 
     public void stop() {
         try {
-            voiceProcessor.removeErrorListener(errorListener);
-            voiceProcessor.removeFrameListener(frameListener);
-            if (voiceProcessor.getNumFrameListeners() == 0) {
-                voiceProcessor.stop();
-            }
+            voiceProcessor.stop();
             eventHandler.post(
                     new Runnable() {
                         @Override

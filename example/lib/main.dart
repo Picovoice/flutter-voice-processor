@@ -1,5 +1,5 @@
 //
-// Copyright 2020-2021 Picovoice Inc.
+// Copyright 2020-2023 Picovoice Inc.
 //
 // You may not use this file except in compliance with the license. A copy of the license is located in the "LICENSE"
 // file accompanying this source.
@@ -9,10 +9,12 @@
 // specific language governing permissions and limitations under the License.
 //
 
-import 'package:flutter/material.dart';
 import 'dart:async';
+import 'dart:math';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_voice_processor/flutter_voice_processor.dart';
+import 'package:flutter_voice_processor_example/vu_meter_painter.dart';
 
 void main() {
   runApp(MyApp());
@@ -24,12 +26,17 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  final int frameLength = 512;
+  final int sampleRate = 16000;
+  final int volumeHistoryCapacity = 5;
+  final double dbOffset = 50.0;
+
+  List<double> _volumeHistory = [];
+  double _smoothedVolumeValue = 0.0;
   bool _isButtonDisabled = false;
   bool _isProcessing = false;
+  String? _errorMessage;
   VoiceProcessor? _voiceProcessor;
-  Function? _removeListener;
-  Function? _removeListener2;
-  Function? _errorListener;
 
   @override
   void initState() {
@@ -38,7 +45,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _initVoiceProcessor() async {
-    _voiceProcessor = VoiceProcessor.getVoiceProcessor(512, 16000);
+    _voiceProcessor = VoiceProcessor.instance;
   }
 
   Future<void> _startProcessing() async {
@@ -46,12 +53,11 @@ class _MyAppState extends State<MyApp> {
       _isButtonDisabled = true;
     });
 
-    _removeListener = _voiceProcessor?.addListener(_onBufferReceived);
-    _removeListener2 = _voiceProcessor?.addListener(_onBufferReceived2);
-    _errorListener = _voiceProcessor?.addErrorListener(_onErrorReceived);
+    _voiceProcessor?.addFrameListener(_onBufferReceived);
+    _voiceProcessor?.addErrorListener(_onErrorReceived);
     try {
       if (await _voiceProcessor?.hasRecordAudioPermission() ?? false) {
-        await _voiceProcessor?.start();
+        await _voiceProcessor?.start(frameLength, sampleRate);
         this.setState(() {
           _isProcessing = true;
         });
@@ -67,17 +73,35 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  void _onBufferReceived(dynamic eventData) {
-    print("Listener 1 received buffer of size ${eventData.length}!");
+  void _onBufferReceived(List<int> frame) {
+    double volumeLevel = calculateVolumeLevel(frame);
+    if (_volumeHistory.length == volumeHistoryCapacity) {
+      _volumeHistory.removeAt(0);
+    }
+    _volumeHistory.add(volumeLevel);
+
+    this.setState(() {
+      _smoothedVolumeValue =
+          _volumeHistory.reduce((a, b) => a + b) / _volumeHistory.length;
+    });
   }
 
-  void _onBufferReceived2(dynamic eventData) {
-    print("Listener 2 received buffer of size ${eventData.length}!");
+  double calculateVolumeLevel(List<int> frame) {
+    double rms = 0.0;
+    for (int sample in frame) {
+      rms += pow(sample, 2);
+    }
+    rms = sqrt(rms / frame.length);
+
+    double dbfs = 20 * log(rms / 32767.0) / log(10);
+    double normalizedValue = (dbfs + dbOffset) / dbOffset;
+    return normalizedValue.clamp(0.0, 1.0);
   }
 
-  void _onErrorReceived(dynamic eventData) {
-    String errorMsg = eventData as String;
-    print(errorMsg);
+  void _onErrorReceived(VoiceProcessorException error) {
+    this.setState(() {
+      _errorMessage = error.message;
+    });
   }
 
   Future<void> _stopProcessing() async {
@@ -86,10 +110,8 @@ class _MyAppState extends State<MyApp> {
     });
 
     await _voiceProcessor?.stop();
-    _removeListener?.call();
-    _removeListener2?.call();
-    _errorListener?.call();
-
+    _voiceProcessor?.removeFrameListener(_onBufferReceived);
+    _voiceProcessor?.removeErrorListener(_onErrorReceived);
     this.setState(() {
       _isButtonDisabled = false;
       _isProcessing = false;
@@ -104,6 +126,8 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
+  Color picoBlue = Color.fromRGBO(55, 125, 255, 1);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -111,18 +135,67 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Voice Processor'),
         ),
-        body: Center(
-          child: _buildToggleProcessingButton(),
-        ),
+        body: Column(children: [
+          buildVuMeter(context),
+          buildStartButton(context),
+          buildErrorMessage(context)
+        ]),
       ),
     );
   }
 
-  Widget _buildToggleProcessingButton() {
-    return new ElevatedButton(
-      onPressed: _isButtonDisabled ? null : _toggleProcessing,
-      child: Text(_isProcessing ? "Stop" : "Start",
-          style: TextStyle(fontSize: 20)),
+  buildVuMeter(BuildContext context) {
+    return Expanded(
+        flex: 2,
+        child: LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            return Container(
+                alignment: Alignment.bottomCenter,
+                child: CustomPaint(
+                    painter: VuMeterPainter(_smoothedVolumeValue, picoBlue),
+                    size: Size(constraints.maxWidth * 0.95, 50)));
+          },
+        ));
+  }
+
+  buildStartButton(BuildContext context) {
+    final ButtonStyle buttonStyle = ElevatedButton.styleFrom(
+        primary: picoBlue,
+        shape: CircleBorder(),
+        textStyle: TextStyle(color: Colors.white));
+
+    return Expanded(
+      flex: 2,
+      child: Container(
+          child: SizedBox(
+              width: 150,
+              height: 150,
+              child: ElevatedButton(
+                style: buttonStyle,
+                onPressed: _isButtonDisabled || _errorMessage != null
+                    ? null
+                    : _toggleProcessing,
+                child: Text(_isProcessing ? "Stop" : "Start",
+                    style: TextStyle(fontSize: 30)),
+              ))),
     );
+  }
+
+  buildErrorMessage(BuildContext context) {
+    return Expanded(
+        flex: 1,
+        child: Container(
+            alignment: Alignment.center,
+            margin: EdgeInsets.only(left: 20, right: 20),
+            decoration: _errorMessage == null
+                ? null
+                : BoxDecoration(
+                    color: Colors.red, borderRadius: BorderRadius.circular(5)),
+            child: _errorMessage == null
+                ? null
+                : Text(
+                    _errorMessage!,
+                    style: TextStyle(color: Colors.white, fontSize: 20),
+                  )));
   }
 }
