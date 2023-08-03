@@ -29,7 +29,7 @@ class _MyAppState extends State<MyApp> {
   final int frameLength = 512;
   final int sampleRate = 16000;
   final int volumeHistoryCapacity = 5;
-  final double dbOffset = 30.0;
+  final double dbOffset = 50.0;
 
   List<double> _volumeHistory = [];
   double _smoothedVolumeValue = 0.0;

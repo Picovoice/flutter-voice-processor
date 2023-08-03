@@ -133,7 +133,7 @@ public class FlutterVoiceProcessorHandler
                 result.success(voiceProcessor.getIsRecording());
                 break;
             case "hasRecordAudioPermission":
-                hasRecordAudioPermission(result);
+                checkRecordAudioPermission(result);
                 break;
             default:
                 result.notImplemented();
@@ -234,7 +234,7 @@ public class FlutterVoiceProcessorHandler
         }
     }
 
-    private void hasRecordAudioPermission(@NonNull Result result) {
+    private void checkRecordAudioPermission(@NonNull Result result) {
         if (!voiceProcessor.hasRecordAudioPermission(activity)) {
             pendingPermissionResult = result;
             ActivityCompat.requestPermissions(
