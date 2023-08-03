@@ -29,7 +29,7 @@ class _MyAppState extends State<MyApp> {
   final int frameLength = 512;
   final int sampleRate = 16000;
   final int volumeHistoryCapacity = 5;
-  final double dbOffset = 50.0;
+  final double dbOffset = 30.0;
 
   List<double> _volumeHistory = [];
   double _smoothedVolumeValue = 0.0;
@@ -58,14 +58,19 @@ class _MyAppState extends State<MyApp> {
     try {
       if (await _voiceProcessor?.hasRecordAudioPermission() ?? false) {
         await _voiceProcessor?.start(frameLength, sampleRate);
+        bool? isRecording = await _voiceProcessor?.isRecording();
         this.setState(() {
-          _isProcessing = true;
+          _isProcessing = isRecording!;
         });
       } else {
-        print("Recording permission not granted");
+        this.setState(() {
+          _errorMessage = "Recording permission not granted";
+        });
       }
     } on PlatformException catch (ex) {
-      print("Failed to start recorder: " + ex.toString());
+      this.setState(() {
+        _errorMessage = "Failed to start recorder: " + ex.toString();
+      });
     } finally {
       this.setState(() {
         _isButtonDisabled = false;
@@ -112,9 +117,11 @@ class _MyAppState extends State<MyApp> {
     await _voiceProcessor?.stop();
     _voiceProcessor?.removeFrameListener(_onBufferReceived);
     _voiceProcessor?.removeErrorListener(_onErrorReceived);
+
+    bool? isRecording = await _voiceProcessor?.isRecording();
     this.setState(() {
       _isButtonDisabled = false;
-      _isProcessing = false;
+      _isProcessing = isRecording!;
     });
   }
 
@@ -186,7 +193,7 @@ class _MyAppState extends State<MyApp> {
         flex: 1,
         child: Container(
             alignment: Alignment.center,
-            margin: EdgeInsets.only(left: 20, right: 20),
+            margin: EdgeInsets.all(30),
             decoration: _errorMessage == null
                 ? null
                 : BoxDecoration(
