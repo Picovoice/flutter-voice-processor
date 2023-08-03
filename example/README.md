@@ -13,7 +13,7 @@ the `VoiceProcessor`.
 
 ## Compatibility
 
-- Flutter 2.8.1+
+- Flutter 1.20.0+
 - Android 5.0+ (API 21+)
 - iOS 11.0+
 
