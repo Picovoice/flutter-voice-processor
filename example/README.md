@@ -19,9 +19,15 @@ the `VoiceProcessor`.
 
 ## Building
 
-Launch a simulator or connect an Android/iOS device and build with the flutter CLI:
+Install dependencies and setup environment:
+
 ```console
 cd example
+flutter pub get
+```
+
+Connect a mobile device or launch a simulator. Then build and run the app:
+```console
 flutter run
 ```
 

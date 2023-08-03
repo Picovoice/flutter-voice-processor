@@ -75,7 +75,7 @@ Access the singleton instance of `VoiceProcessor`:
 ```dart
 import 'package:flutter_voice_processor/flutter_voice_processor.dart';
 
-VoiceProcessor _voiceProcessor = VoiceProcessor.instance;
+VoiceProcessor? _voiceProcessor = VoiceProcessor.instance;
 ```
 
 Add listeners for audio frames and errors:
@@ -89,26 +89,30 @@ VoiceProcessorErrorListener errorListener = (VoiceProcessorException error) {
     // handle error
 }
 
-_voiceProcessor.addFrameListener(frameListener);
-_voiceProcessor.addErrorListener(errorListener);
+_voiceProcessor?.addFrameListener(frameListener);
+_voiceProcessor?.addErrorListener(errorListener);
 ```
 
-Start audio capture with the desired frame length and audio sample rate:
+Ask for audio record permission and start recording with the desired frame length and audio sample rate:
 
 ```dart
 final int frameLength = 512;
 final int sampleRate = 16000;
-try {
-    await _voiceProcessor.start(frameLength, sampleRate);
-} on PlatformException catch (ex) {
-    // handle start error
+if (await _voiceProcessor?.hasRecordAudioPermission() ?? false) {
+    try {
+        await _voiceProcessor?.start(frameLength, sampleRate);
+    } on PlatformException catch (ex) {
+        // handle start error
+    }
+} else {
+    // user did not grant permission
 }
 ```
 
 Stop audio capture:
 ```dart
 try {
-    await _voiceProcessor.stop();
+    await _voiceProcessor?.stop();
 } on PlatformException catch (ex) {
     // handle stop error
 }
@@ -125,11 +129,11 @@ which all listeners will receive once a call to `start()` has been made. To add 
 VoiceProcessorFrameListener listener1 = (frame) { }
 VoiceProcessorFrameListener listener2 = (frame) { }
 List<VoiceProcessorFrameListener> listeners = [listener1, listener2];
-voiceProcessor.addFrameListeners(listeners);
+_voiceProcessor?.addFrameListeners(listeners);
 
-voiceProcessor.removeFrameListeners(listeners);
+_voiceProcessor?.removeFrameListeners(listeners);
 // or
-voiceProcessor.clearFrameListeners();
+_voiceProcessor?.clearFrameListeners();
 ```
 
 ## Example
