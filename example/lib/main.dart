@@ -53,8 +53,28 @@ class _MyAppState extends State<MyApp> {
       _isButtonDisabled = true;
     });
 
-    _voiceProcessor?.addFrameListener(_onBufferReceived);
-    _voiceProcessor?.addErrorListener(_onErrorReceived);
+    VoiceProcessorFrameListener frameListener = (List<int> frame) {
+      double volumeLevel = calculateVolumeLevel(frame);
+      if (_volumeHistory.length == volumeHistoryCapacity) {
+        _volumeHistory.removeAt(0);
+      }
+      _volumeHistory.add(volumeLevel);
+
+      this.setState(() {
+        _smoothedVolumeValue =
+            _volumeHistory.reduce((a, b) => a + b) / _volumeHistory.length;
+      });
+    };
+
+    VoiceProcessorErrorListener errorListener =
+        (VoiceProcessorException error) {
+      this.setState(() {
+        _errorMessage = error.message;
+      });
+    };
+
+    _voiceProcessor?.addFrameListener(frameListener);
+    _voiceProcessor?.addErrorListener(errorListener);
     try {
       if (await _voiceProcessor?.hasRecordAudioPermission() ?? false) {
         await _voiceProcessor?.start(frameLength, sampleRate);
@@ -78,19 +98,6 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  void _onBufferReceived(List<int> frame) {
-    double volumeLevel = calculateVolumeLevel(frame);
-    if (_volumeHistory.length == volumeHistoryCapacity) {
-      _volumeHistory.removeAt(0);
-    }
-    _volumeHistory.add(volumeLevel);
-
-    this.setState(() {
-      _smoothedVolumeValue =
-          _volumeHistory.reduce((a, b) => a + b) / _volumeHistory.length;
-    });
-  }
-
   double calculateVolumeLevel(List<int> frame) {
     double rms = 0.0;
     for (int sample in frame) {
@@ -103,26 +110,24 @@ class _MyAppState extends State<MyApp> {
     return normalizedValue.clamp(0.0, 1.0);
   }
 
-  void _onErrorReceived(VoiceProcessorException error) {
-    this.setState(() {
-      _errorMessage = error.message;
-    });
-  }
-
   Future<void> _stopProcessing() async {
     this.setState(() {
       _isButtonDisabled = true;
     });
 
-    await _voiceProcessor?.stop();
-    _voiceProcessor?.removeFrameListener(_onBufferReceived);
-    _voiceProcessor?.removeErrorListener(_onErrorReceived);
-
-    bool? isRecording = await _voiceProcessor?.isRecording();
-    this.setState(() {
-      _isButtonDisabled = false;
-      _isProcessing = isRecording!;
-    });
+    try {
+      await _voiceProcessor?.stop();
+    } on PlatformException catch (ex) {
+      this.setState(() {
+        _errorMessage = "Failed to stop recorder: " + ex.toString();
+      });
+    } finally {
+      bool? isRecording = await _voiceProcessor?.isRecording();
+      this.setState(() {
+        _isButtonDisabled = false;
+        _isProcessing = isRecording!;
+      });
+    }
   }
 
   void _toggleProcessing() async {
