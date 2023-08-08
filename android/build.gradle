@@ -4,7 +4,7 @@ version '1.0'
 buildscript {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
 
     dependencies {
@@ -15,7 +15,7 @@ buildscript {
 rootProject.allprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
 }
 
@@ -27,7 +27,20 @@ android {
     defaultConfig {
         minSdkVersion 21
     }
-    lintOptions {
-        disable 'InvalidPackage'
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
     }
+    lintOptions {
+        disable 'GradleCompatible'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    implementation 'ai.picovoice:android-voice-processor:1.0.2'
 }

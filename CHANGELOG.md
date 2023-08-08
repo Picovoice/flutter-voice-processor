@@ -31,3 +31,7 @@
 
 ## [1.0.10] - 2023-06-01
 * Improved hot restart behaviour on Android
+
+## [1.1.0] - 2023-08-03
+* Improved API
+* Changed native recorders
