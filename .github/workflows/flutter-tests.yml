@@ -50,5 +50,8 @@ jobs:
     - name: Install dependencies
       run: flutter pub get
 
+    - name: Grant permissions
+      run: xcrun simctl privacy booted grant all ai.picovoice.flutter.voiceprocessor.flutterVoiceProcessorExample
+
     - name: Run integration tests
-      run: flutter drive --driver=integration_test/driver.dart --target=integration_test/app_test.dart
+      run: flutter test integration_test/app_test.dart

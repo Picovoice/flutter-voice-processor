@@ -163,6 +163,7 @@ seeed
 serilog
 signup
 silenzio
+simctl
 siri
 slist
 snowboy
@@ -200,6 +201,7 @@ webvp
 werror
 xcframework
 xcodeproj
+xcrun
 xcscheme
 xcschemes
 xcshareddata
