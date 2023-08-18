@@ -23,10 +23,11 @@ class VoiceProcessorException implements Exception {
 }
 
 /// Type for callback functions that receive audio frames from the VoiceProcessor.
-typedef void VoiceProcessorFrameListener(List<int> frame);
+typedef VoiceProcessorFrameListener = void Function(List<int> frame);
 
 /// Type for callbacks that receive errors from the VoiceProcessor.
-typedef void VoiceProcessorErrorListener(VoiceProcessorException error);
+typedef VoiceProcessorErrorListener = void Function(
+    VoiceProcessorException error);
 
 /// An audio capture library designed for real-time speech audio processing
 /// on mobile devices. Given some specifications, the library delivers
@@ -43,8 +44,8 @@ class VoiceProcessor {
   final EventChannel _errorEventsChannel =
       const EventChannel('flutter_voice_processor_error_events');
 
-  List<VoiceProcessorFrameListener> _frameListeners = [];
-  List<VoiceProcessorErrorListener> _errorListeners = [];
+  final List<VoiceProcessorFrameListener> _frameListeners = [];
+  final List<VoiceProcessorErrorListener> _errorListeners = [];
 
   void _onFrame(List<int> frame) {
     for (VoiceProcessorFrameListener frameListener in _frameListeners) {
@@ -88,9 +89,7 @@ class VoiceProcessor {
 
   /// Singleton instance of VoiceProcessor
   static VoiceProcessor? get instance {
-    if (_instance == null) {
-      _instance = new VoiceProcessor._();
-    }
+    _instance ??= VoiceProcessor._();
     return _instance;
   }
 

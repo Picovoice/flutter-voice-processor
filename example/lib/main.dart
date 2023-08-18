@@ -31,7 +31,7 @@ class _MyAppState extends State<MyApp> {
   final int volumeHistoryCapacity = 5;
   final double dbOffset = 50.0;
 
-  List<double> _volumeHistory = [];
+  final List<double> _volumeHistory = [];
   double _smoothedVolumeValue = 0.0;
   bool _isButtonDisabled = false;
   bool _isProcessing = false;
@@ -49,81 +49,49 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _startProcessing() async {
-    this.setState(() {
+    setState(() {
       _isButtonDisabled = true;
     });
 
-    VoiceProcessorFrameListener frameListener = (List<int> frame) {
-      double volumeLevel = calculateVolumeLevel(frame);
-      if (_volumeHistory.length == volumeHistoryCapacity) {
-        _volumeHistory.removeAt(0);
-      }
-      _volumeHistory.add(volumeLevel);
-
-      this.setState(() {
-        _smoothedVolumeValue =
-            _volumeHistory.reduce((a, b) => a + b) / _volumeHistory.length;
-      });
-    };
-
-    VoiceProcessorErrorListener errorListener =
-        (VoiceProcessorException error) {
-      this.setState(() {
-        _errorMessage = error.message;
-      });
-    };
-
-    _voiceProcessor?.addFrameListener(frameListener);
-    _voiceProcessor?.addErrorListener(errorListener);
+    _voiceProcessor?.addFrameListener(_onFrame);
+    _voiceProcessor?.addErrorListener(_onError);
     try {
       if (await _voiceProcessor?.hasRecordAudioPermission() ?? false) {
         await _voiceProcessor?.start(frameLength, sampleRate);
         bool? isRecording = await _voiceProcessor?.isRecording();
-        this.setState(() {
+        setState(() {
           _isProcessing = isRecording!;
         });
       } else {
-        this.setState(() {
+        setState(() {
           _errorMessage = "Recording permission not granted";
         });
       }
     } on PlatformException catch (ex) {
-      this.setState(() {
+      setState(() {
         _errorMessage = "Failed to start recorder: " + ex.toString();
       });
     } finally {
-      this.setState(() {
+      setState(() {
         _isButtonDisabled = false;
       });
     }
   }
 
-  double calculateVolumeLevel(List<int> frame) {
-    double rms = 0.0;
-    for (int sample in frame) {
-      rms += pow(sample, 2);
-    }
-    rms = sqrt(rms / frame.length);
-
-    double dbfs = 20 * log(rms / 32767.0) / log(10);
-    double normalizedValue = (dbfs + dbOffset) / dbOffset;
-    return normalizedValue.clamp(0.0, 1.0);
-  }
-
   Future<void> _stopProcessing() async {
-    this.setState(() {
+    setState(() {
       _isButtonDisabled = true;
     });
 
     try {
       await _voiceProcessor?.stop();
     } on PlatformException catch (ex) {
-      this.setState(() {
+      setState(() {
         _errorMessage = "Failed to stop recorder: " + ex.toString();
       });
     } finally {
       bool? isRecording = await _voiceProcessor?.isRecording();
-      this.setState(() {
+      setState(() {
         _isButtonDisabled = false;
         _isProcessing = isRecording!;
       });
@@ -136,6 +104,37 @@ class _MyAppState extends State<MyApp> {
     } else {
       await _startProcessing();
     }
+  }
+
+  double _calculateVolumeLevel(List<int> frame) {
+    double rms = 0.0;
+    for (int sample in frame) {
+      rms += pow(sample, 2);
+    }
+    rms = sqrt(rms / frame.length);
+
+    double dbfs = 20 * log(rms / 32767.0) / log(10);
+    double normalizedValue = (dbfs + dbOffset) / dbOffset;
+    return normalizedValue.clamp(0.0, 1.0);
+  }
+
+  void _onFrame(List<int> frame) {
+    double volumeLevel = _calculateVolumeLevel(frame);
+    if (_volumeHistory.length == volumeHistoryCapacity) {
+      _volumeHistory.removeAt(0);
+    }
+    _volumeHistory.add(volumeLevel);
+
+    setState(() {
+      _smoothedVolumeValue =
+          _volumeHistory.reduce((a, b) => a + b) / _volumeHistory.length;
+    });
+  }
+
+  void _onError(VoiceProcessorException error) {
+    setState(() {
+      _errorMessage = error.message;
+    });
   }
 
   Color picoBlue = Color.fromRGBO(55, 125, 255, 1);

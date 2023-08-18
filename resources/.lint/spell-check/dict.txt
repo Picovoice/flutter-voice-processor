@@ -40,6 +40,7 @@ coolterm
 cortexm
 cporcupine
 cstring
+dbfs
 dkgray
 dlfcn
 dlopen
@@ -98,6 +99,7 @@ libloading
 libpv
 lpcstr
 lpwstr
+LTWH
 makefiles
 manzana
 maxsplit
@@ -184,6 +186,8 @@ timecode
 tmpdir
 unitypackage
 uppercased
+voiceprocessor
+voiceprocessorexample
 vtable
 wakeword
 wakewords
