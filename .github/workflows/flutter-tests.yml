@@ -51,7 +51,7 @@ jobs:
       run: flutter pub get
 
     - name: Grant permissions
-      run: xcrun simctl privacy booted grant all ai.picovoice.flutter.voiceprocessor.flutterVoiceProcessorExample
+      run: xcrun simctl privacy booted grant microphone ai.picovoice.flutter.voiceprocessor.flutterVoiceProcessorExample
 
     - name: Run integration tests
-      run: flutter test integration_test/app_test.dart
+      run: flutter test integration_test
