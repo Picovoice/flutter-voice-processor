@@ -24,5 +24,14 @@ Future<void> main() async {
         'android.permission.RECORD_AUDIO'
       ],
     );
+  } else if (Platform.isIOS) {
+    await Process.run('xcrun', [
+      'simctl',
+      'privacy',
+      'booted',
+      'grant',
+      'all',
+      'ai.picovoice.flutter.voiceprocessor.flutterVoiceProcessorExample'
+    ]);
   }
 }
