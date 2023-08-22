@@ -1,0 +1,57 @@
+name: Flutter Tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/flutter.yml'
+      - '**'
+      - "!LICENSE"
+      - "!README.md"
+      - '!example/README.md'
+  pull_request:
+    branches: [ main, 'v[0-9]+.[0-9]+' ]
+    paths:
+      - '.github/workflows/flutter.yml'
+      - '**'
+      - "!LICENSE"
+      - "!README.md"
+      - '!example/README.md'
+
+defaults:
+  run:
+    working-directory: example
+
+jobs:
+  test-android:
+    name: Test Android
+    runs-on: pv-android
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: flutter pub get
+
+    - name: Run integration tests
+      run: flutter drive --driver=integration_test/driver.dart --target=integration_test/app_test.dart
+
+  test-ios:
+    name: Test iOS
+    runs-on: pv-ios
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Update Cocoapods repo
+      run: pod repo update
+
+    - name: Install dependencies
+      run: flutter pub get
+
+    - name: Grant permissions
+      run: xcrun simctl privacy booted grant microphone ai.picovoice.flutter.voiceprocessor.flutterVoiceProcessorExample
+
+    - name: Run integration tests
+      run: flutter test integration_test

@@ -14,8 +14,11 @@ dependencies:
     path: ../
 
 dev_dependencies:
+  integration_test:
+    sdk: flutter
   flutter_test:
     sdk: flutter
+  lints: ^1.0.1
 
 flutter:
   uses-material-design: true
