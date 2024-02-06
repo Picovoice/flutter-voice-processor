@@ -15,9 +15,9 @@ on:
       - 'example/**'
       - '!example/README.md'
 
-defaults:
-  run:
-    working-directory: example
+# defaults:
+#   run:
+#     working-directory: example
 
 jobs:
   build-android:
@@ -47,13 +47,14 @@ jobs:
 
     - name: Install dependencies
       run: flutter pub get
+      working-directory: example
 
     - name: Install dependencies
       run: ./gradlew --version
-      working-directory: ./
 
     - name: Build
       run: flutter build apk
+      working-directory: example
 
   build-ios:
     name: Build iOS demo
