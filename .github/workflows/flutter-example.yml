@@ -50,7 +50,6 @@ jobs:
 
     - name: Install dependencies
       run: ./gradlew --version
-      working-directory: example/android
 
     - name: Build
       run: flutter build apk
