@@ -62,7 +62,7 @@ jobs:
       run: flutter pub get
 
     - name: Inject AGP version
-      run: echo agpVersion="${{ matrix.agp-version }}" >> local.properties
+      run: echo \nagpVersion="${{ matrix.agp-version }}"\n >> local.properties
       working-directory: example/android
 
     - name: Generate gradle wrapper
