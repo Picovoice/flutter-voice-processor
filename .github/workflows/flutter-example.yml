@@ -61,12 +61,12 @@ jobs:
     - name: Install dependencies
       run: flutter pub get
 
+    - name: Inject AGP version
+      run: echo agpVersion="${{ matrix.agp-version }}" >> local.properties
+
     - name: Generate gradle wrapper
       run: gradle wrapper --gradle-version ${{ matrix.gradle-version }} --distribution-type all
       working-directory: example/android
-
-    - name: Inject AGP version
-      run: echo agpVersion="${{ matrix.agp-version }}" >> local.properties
 
     - name: Build
       run: flutter build apk
