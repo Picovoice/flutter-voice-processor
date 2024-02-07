@@ -27,6 +27,11 @@ jobs:
       matrix:
         flutter-version: ['3.0.4']
         gradle-version: ['7.5', '8.2']
+        include:
+        - gradle-version: 7.5
+          agp-version: 7.4.2
+        - gradle-version: 8.2
+          agp-version: 8.2.2
 
     steps:
     - uses: actions/checkout@v3
@@ -48,6 +53,9 @@ jobs:
 
     - name: Install dependencies
       run: flutter pub get
+
+    - name: Inject AccessKey
+      run: echo agpVersion="${{ matrix.agp-version }}" >> local.properties
 
     - name: Generate gradle wrapper
       run: ./gradlew wrapper --gradle-version ${{ matrix.gradle-version }} --distribution-type all
