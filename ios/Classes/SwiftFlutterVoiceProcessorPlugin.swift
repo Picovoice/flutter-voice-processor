@@ -1,5 +1,5 @@
 //
-// Copyright 2020-2023 Picovoice Inc.
+// Copyright 2020-2024 Picovoice Inc.
 //
 // You may not use this file except in compliance with the license. A copy of the license is located in the "LICENSE"
 // file accompanying this source.
@@ -18,7 +18,7 @@ import ios_voice_processor
 public class SwiftFlutterVoiceProcessorPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
     private let voiceProcessor = VoiceProcessor.instance;
-    
+
     private var settingsTimer: Timer?
     private var settingsLock = NSLock()
     private var frameEventSink: FlutterEventSink?
@@ -37,15 +37,19 @@ public class SwiftFlutterVoiceProcessorPlugin: NSObject, FlutterPlugin, FlutterS
         let errorEventChannel = FlutterEventChannel(name: "flutter_voice_processor_error_events", binaryMessenger: registrar.messenger())
         errorEventChannel.setStreamHandler(instance)
     }
-    
+
     public override init() {
         super.init()
         voiceProcessor.addFrameListener(VoiceProcessorFrameListener({ frame in
-            self.frameEventSink?(Array(frame))
+            DispatchQueue.main.async {
+                self.frameEventSink?(Array(frame))
+            }
         }))
-        
+
         voiceProcessor.addErrorListener(VoiceProcessorErrorListener({ error in
-            self.errorEventSink?(error.errorDescription)
+            DispatchQueue.main.async {
+                self.errorEventSink?(error.errorDescription)
+            }
         }))
     }
 
@@ -60,7 +64,7 @@ public class SwiftFlutterVoiceProcessorPlugin: NSObject, FlutterPlugin, FlutterS
                     result(FlutterError(code: "PV_INVALID_ARGUMENT", message: "Invalid argument provided to VoiceProcessor.start", details: nil))
                     return
                 }
-                    
+
                 self.start(frameLength: frameLength, sampleRate: sampleRate, result: result)
             case "stop":
                 self.stop(result:result)
@@ -115,7 +119,7 @@ public class SwiftFlutterVoiceProcessorPlugin: NSObject, FlutterPlugin, FlutterS
             userInfo: nil,
             repeats: true)
         isSettingsErrorReported = false
-        
+
         result(true)
     }
 

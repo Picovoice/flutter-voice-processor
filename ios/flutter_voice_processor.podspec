@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'flutter_voice_processor'
-  s.version          = '1.1.0'
+  s.version          = '1.1.1'
   s.summary          = 'A Flutter audio recording plugin designed for real-time speech audio processing.'
   s.description      = <<-DESC
   The Flutter Voice Processor is an asynchronous audio capture library designed for real-time audio processing.
