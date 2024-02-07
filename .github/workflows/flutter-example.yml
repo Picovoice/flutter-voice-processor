@@ -25,11 +25,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        flutter-version: ['3.0.4']
-        gradle-version: ['7.5', '8.2']
+        flutter-version: ['3.0.4', '3.10.6']
         include:
-        - gradle-version: 7.5
+        - flutter-version: 3.0.4
+          gradle-version: 7.5
           agp-version: 7.4.2
+        - flutter-version: 3.10.6
+          gradle-version: 8.2
+          agp-version: 8.2.2
 
     steps:
     - uses: actions/checkout@v3
