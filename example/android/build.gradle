@@ -31,7 +31,7 @@ buildscript {
 
     def agpVersion = localProperties.getProperty('agpVersion')
     if (agpVersion == null) {
-        agpVersion = '8.2.2'
+        agpVersion = '7.4.2'
     }
 
     ext {

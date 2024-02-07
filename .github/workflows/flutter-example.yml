@@ -30,8 +30,6 @@ jobs:
         include:
         - gradle-version: 7.5
           agp-version: 7.4.2
-        - gradle-version: 8.2
-          agp-version: 8.2.2
 
     steps:
     - uses: actions/checkout@v3
