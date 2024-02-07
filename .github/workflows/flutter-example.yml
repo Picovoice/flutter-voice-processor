@@ -63,6 +63,7 @@ jobs:
 
     - name: Inject AGP version
       run: echo agpVersion="${{ matrix.agp-version }}" >> local.properties
+      working-directory: example/android
 
     - name: Generate gradle wrapper
       run: gradle wrapper --gradle-version ${{ matrix.gradle-version }} --distribution-type all
