@@ -62,7 +62,7 @@ jobs:
       run: flutter pub get
 
     - name: Generate gradle wrapper
-      run: ./gradlew wrapper --gradle-version ${{ matrix.gradle-version }} --distribution-type all
+      run: gradle wrapper --gradle-version ${{ matrix.gradle-version }} --distribution-type all
       working-directory: example/android
 
     - name: Inject AGP version
