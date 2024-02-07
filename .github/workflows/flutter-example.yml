@@ -43,10 +43,10 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Set up JDK 17
+    - name: Set up JDK ${{ matrix.java-version }}
       uses: actions/setup-java@v4
       with:
-        java-version: '17'
+        java-version: ${{ matrix.java-version }}
         distribution: 'temurin'
 
     - name: Install Flutter ${{ matrix.flutter-version }}
@@ -65,7 +65,7 @@ jobs:
       run: ./gradlew wrapper --gradle-version ${{ matrix.gradle-version }} --distribution-type all
       working-directory: example/android
 
-    - name: Inject AccessKey
+    - name: Inject AGP version
       run: echo agpVersion="${{ matrix.agp-version }}" >> local.properties
 
     - name: Build
