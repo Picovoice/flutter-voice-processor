@@ -72,27 +72,27 @@ jobs:
     - name: Build
       run: flutter build apk
 
-  # build-ios:
-  #   name: Build iOS demo
-  #   runs-on: macos-latest
-  #   strategy:
-  #     matrix:
-  #       flutter-version: ['2.8.1', '3.0.4']
+  build-ios:
+    name: Build iOS demo
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        flutter-version: ['2.8.1', '3.0.4', '3.10.6']
 
-  #   steps:
-  #   - uses: actions/checkout@v3
+    steps:
+    - uses: actions/checkout@v3
 
-  #   - name: Install Flutter ${{ matrix.flutter-version }}
-  #     uses: subosito/flutter-action@v2
-  #     with:
-  #       flutter-version: ${{ matrix.flutter-version }}
-  #       architecture: x64
+    - name: Install Flutter ${{ matrix.flutter-version }}
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ matrix.flutter-version }}
+        architecture: x64
 
-  #   - name: Update Cocoapods repo
-  #     run: pod repo update
+    - name: Update Cocoapods repo
+      run: pod repo update
 
-  #   - name: Install dependencies
-  #     run: flutter pub get
+    - name: Install dependencies
+      run: flutter pub get
 
-  #   - name: Build
-  #     run: flutter build ios --release --no-codesign
+    - name: Build
+      run: flutter build ios --release --no-codesign
