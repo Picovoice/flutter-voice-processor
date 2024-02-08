@@ -35,3 +35,6 @@
 ## [1.1.0] - 2023-08-03
 * Improved API
 * Changed native recorders
+
+## [1.1.1] - 2024-02-07
+* iOS channel events to main thread

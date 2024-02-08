@@ -1,12 +1,12 @@
 name: flutter_voice_processor
 description: A Flutter audio recording plugin designed for real-time speech audio processing.
-version: 1.1.0
+version: 1.1.1
 homepage: https://picovoice.ai/
 repository: https://github.com/Picovoice/flutter-voice-processor
 documentation: https://picovoice.ai/docs/audio-recording-software/
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
+  sdk: ">=2.12.0 <4.0.0"
   flutter: ">=1.20.0"
 
 dependencies:

@@ -25,15 +25,28 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        flutter-version: ['2.8.1', '3.0.4']
+        flutter-version: ['2.8.1', '3.0.4', '3.10.6']
+        include:
+        - flutter-version: 2.8.1
+          gradle-version: 6.5
+          agp-version: 4.1.3
+          java-version: 11
+        - flutter-version: 3.0.4
+          gradle-version: 7.5
+          agp-version: 7.4.2
+          java-version: 11
+        - flutter-version: 3.10.6
+          gradle-version: 8.2
+          agp-version: 8.2.2
+          java-version: 17
 
     steps:
     - uses: actions/checkout@v3
 
-    - name: Set up JDK 11
-      uses: actions/setup-java@v3
+    - name: Set up JDK ${{ matrix.java-version }}
+      uses: actions/setup-java@v4
       with:
-        java-version: '11'
+        java-version: ${{ matrix.java-version }}
         distribution: 'temurin'
 
     - name: Install Flutter ${{ matrix.flutter-version }}
@@ -41,8 +54,20 @@ jobs:
       with:
         flutter-version: ${{ matrix.flutter-version }}
 
+    - uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-version: ${{ matrix.gradle-version }}
+
+    - name: Inject AGP version
+      run: echo agpVersion="${{ matrix.agp-version }}" >> local.properties
+      working-directory: example/android
+
     - name: Install dependencies
       run: flutter pub get
+
+    - name: Generate gradle wrapper
+      run: gradle wrapper --gradle-version ${{ matrix.gradle-version }} --distribution-type all
+      working-directory: example/android
 
     - name: Build
       run: flutter build apk
@@ -52,7 +77,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        flutter-version: ['2.8.1', '3.0.4']
+        flutter-version: ['2.8.1', '3.0.4', '3.10.6']
 
     steps:
     - uses: actions/checkout@v3

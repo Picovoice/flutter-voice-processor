@@ -1,13 +1,16 @@
 PODS:
   - Flutter (1.0.0)
-  - flutter_voice_processor (1.1.0):
+  - flutter_voice_processor (1.1.1):
     - Flutter
     - ios-voice-processor (~> 1.1.0)
+  - integration_test (0.0.1):
+    - Flutter
   - ios-voice-processor (1.1.0)
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_voice_processor (from `.symlinks/plugins/flutter_voice_processor/ios`)
+  - integration_test (from `.symlinks/plugins/integration_test/ios`)
 
 SPEC REPOS:
   trunk:
@@ -18,12 +21,15 @@ EXTERNAL SOURCES:
     :path: Flutter
   flutter_voice_processor:
     :path: ".symlinks/plugins/flutter_voice_processor/ios"
+  integration_test:
+    :path: ".symlinks/plugins/integration_test/ios"
 
 SPEC CHECKSUMS:
-  Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
-  flutter_voice_processor: 53afbf59ad3feb82f4a379fea9ed8dc98495210f
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  flutter_voice_processor: 2b89b93d69b02227ae3fd58589ee0bcfa3ca2a82
+  integration_test: 13825b8a9334a850581300559b8839134b124670
   ios-voice-processor: 8e32d7f980a06d392d128ef1cd19cf6ddcaca3c1
 
-PODFILE CHECKSUM: 7368163408c647b7eb699d0d788ba6718e18fb8d
+PODFILE CHECKSUM: 4e8f8b2be68aeea4c0d5beb6ff1e79fface1d048
 
 COCOAPODS: 1.11.3
