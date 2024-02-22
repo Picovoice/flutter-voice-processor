@@ -14,7 +14,7 @@ Made in Vancouver, Canada by [Picovoice](https://picovoice.ai)
 
 The Flutter Voice Processor is an asynchronous audio capture library designed for real-time audio
 processing on mobile devices. Given some specifications, the library delivers frames of raw audio
-data to the user via listeners.
+data (16-bit, mono PCM) to the user via listeners.
 
 ## Table of Contents
 
