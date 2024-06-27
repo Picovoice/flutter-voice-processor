@@ -171,7 +171,7 @@ class _MyAppState extends State<MyApp> {
 
   buildStartButton(BuildContext context) {
     final ButtonStyle buttonStyle = ElevatedButton.styleFrom(
-        primary: picoBlue,
+        backgroundColor: picoBlue,
         shape: CircleBorder(),
         textStyle: TextStyle(color: Colors.white));
 
