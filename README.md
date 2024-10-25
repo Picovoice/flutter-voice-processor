@@ -40,7 +40,7 @@ data (16-bit, mono PCM) to the user via listeners.
 
 - Flutter 1.20.0+
 - Android 5.0+ (API 21+)
-- iOS 11.0+
+- iOS 13.0+
 
 ## Installation
 
