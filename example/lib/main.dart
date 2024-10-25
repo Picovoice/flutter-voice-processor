@@ -187,7 +187,7 @@ class _MyAppState extends State<MyApp> {
                     ? null
                     : _toggleProcessing,
                 child: Text(_isProcessing ? "Stop" : "Start",
-                    style: TextStyle(fontSize: 30)),
+                    style: TextStyle(fontSize: 30, color: Colors.white)),
               ))),
     );
   }
