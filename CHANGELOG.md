@@ -38,3 +38,6 @@
 
 ## [1.1.1] - 2024-02-07
 * iOS channel events to main thread
+
+## [1.1.2] - 2024-10-25
+* Updated iOS native recorder
